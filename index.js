@@ -11,7 +11,7 @@ import lock from "./icons/SVG/lock.svg";
 // html structure for each panel
 
 const createPanel = (c, i) => `
-<div class="panel" style="background-color: hsl(${c.hue},${c.saturation}%, ${c.lightness}%)" id="${i}" draggable="true">
+<div class="panel" style="background-color: hsl(${c.hue},${c.saturation}%, ${c.lightness}%)" id="${i}" draggable="false">
     <div class="panel__left">
         <div class="left__add-button" data-type="add_left" id="${i}">
             <img src=${addIcon} alt="add" draggable="false" data-type="add_left" id="${i}"/>
@@ -70,7 +70,8 @@ function randomizeColor() {
 }
 
 function fillArrayWithColors() {
-    const newPanels = panels.map(() => ({ lock: false, color: randomizeColor() }))
+    const newPanels = panels.map(() => (
+        { lock: false, color: randomizeColor() }))
     panels = newPanels
 }
 
@@ -115,59 +116,53 @@ function actions(e) {
             copy(dataset.color)
             break
 
+        case 'paddle':
+
+            break
+
     }
 }
 
-let  panelsPosition
 
+//function for movig color panels
 function dranAndDrop(e) {
     const { dataset, id } = e.path[0];
     if (dataset.type != 'drag') return;
 
     let clickedPanel = e.path[4]
     let movedPanelId = clickedPanel.id
+    let overElementId
+
+    clickedPanel.draggable = 'true'
+    const panelsElements = Array.from(container.querySelectorAll('.panel'))
 
 
-    clickedPanel.addEventListener('dragstart', () => {
+    clickedPanel.addEventListener('dragstart', (e) => {
+
     })
-    clickedPanel.addEventListener('dragend', () => { });
+    clickedPanel.addEventListener('dragend', () => {
+        const panelsCopy = panels
+        const removedPanel = panelsCopy.splice(movedPanelId, 1)
+        panelsCopy.splice(overElementId, 0, removedPanel[0])
+        panels = panelsCopy
+        createPanels()
+
+    });
+    // function to find out over which element there is a mouse
     container.addEventListener('dragover', (e) => {
-        let movedPanelPosition = ({leftPosition: `${clickedPanel.offsetLeft}`, rightPosition: `${clickedPanel.offsetLeft + clickedPanel.offsetWidth}` })
+        e.preventDefault()
+        const panelsPosition = panelsElements.map((p) => ({ left: `${p.offsetLeft}`, right: `${p.offsetLeft + p.offsetWidth}`, id: `${p.id}` }))
         let mousePosition = e.pageX
 
-        if(mousePosition<movedPanelPosition.leftPosition){
-            const switchedPanel = panels.splice(movedPanelId, 1)
-            console.log(switchedPanel)
-            // panels.splice(movedPanelId, 1)
-            // panels.splice(movedPanelId+1, 0, `${switchedPanel}`)
-
-
-        }
-
-
+        panelsPosition.forEach((el) => {
+            if (mousePosition > el.left && mousePosition < el.right) {
+                return overElementId = el.id
+            }
+        })
     });
 
 }
 
-
-    // z internetów - nie bedzie działać
-
-    // container.addEventListener('dragover', () => {
-    //     const afterElement = getDragAfterElement(panelsList, id, e.clientX)
-    // })
-
-
-
-    // function getDragAfterElement(panelsList, dreggedElementId, x) {
-    //     const draggableElements = [...panelsList]
-    //     draggableElements.splice(dreggedElementId, 1)
-
-    //     draggableElements.reduce((closest, child)=> {
-    //         const box = child.getBoundingClientRect()
-    //         const offset = x -box.right - box.width / 2
-    //         console.log(offset)
-    //     },{offset: Number.POSITIVE_INFINITY})
-    // }
 
 
 
