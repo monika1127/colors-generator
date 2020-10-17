@@ -6,6 +6,7 @@
   <style>
     html {
       box-sizing: border-box;
+      user-select: none;
     }
 
     .container {
@@ -43,12 +44,19 @@
     img {
       width: 20px;
       height: 20px;
-      color: gray;
     }
-
+    .actions__list-element img {
+      transition: transform 0.2s ease-in-out;
+    }
+    .actions__list-element img:hover {
+      transform: scale(1.4);
+    }
+    .drag {
+      cursor: move;
+    }
     .colorname {
       margin: 70px 0px 100px 0px;
-      font-size: 28px;
+      font-size: 20px;
       font-weight: 900;
     }
 

@@ -1,44 +1,46 @@
-import copy from "./icons/SVG/copy.svg";
-import add from "./icons/SVG/plus.svg";
-import drag from "./icons/SVG/tab.svg";
-import remove from "./icons/SVG/bin2.svg";
-import unlock from "./icons/SVG/unlocked.svg";
-import shades from "./icons/SVG/table2.svg";
+import hslToHex from "hsl-to-hex";
+import copy from "copy-to-clipboard";
+import copyIcon from "./icons/SVG/copy.svg";
+import addIcon from "./icons/SVG/plus.svg";
+import dragIcon from "./icons/SVG/tab.svg";
+import removeIcon from "./icons/SVG/bin2.svg";
+import unlockIcon from "./icons/SVG/unlocked.svg";
+import shadesIcon from "./icons/SVG/table2.svg";
 import lock from "./icons/SVG/lock.svg";
 
 // html structure for each panel
 
 const createPanel = (c, i) => `
-<div class="panel" style="background-color: ${c}" id="panel-${i}">
+<div class="panel" style="background-color: hsl(${c.hue},${c.saturation}%, ${c.lightness}%)" id="${i}">
     <div class="panel__left">
-        <div class="left__add-button">
-            <img src=${add} alt="add" data-type="add_left" id="${i}"/>
+        <div class="left__add-button" data-type="add_left" id="${i}">
+            <img src=${addIcon} alt="add" draggable="false" data-type="add_left" id="${i}"/>
         </div>
     </div>
     <div class="panel__main">
         <div class="actions__list">
         <div class="actions__list-element remove">
-            <img src=${remove} alt="remove" data-type="remove" id="${i}"/>
+            <img src=${removeIcon} alt="remove" draggable="false" data-type="remove" id="${i}"/>
         </div>
         <div class="actions__list-element copy">
-            <img src=${copy} alt="copy" data-type="copy" id="${i}"/>
+            <img src=${copyIcon} alt="copy" draggable="false" data-type="copy" id="${i}" data-color="${c.hex}"/>
         </div>
         <div class="actions__list-element drag">
-            <img src=${drag} alt="drag" data-type="drag" id="${i}"/>
+            <img src=${dragIcon} alt="drag"  data-type="drag" id="${i}"/>
         </div>
         <div class="actions__list-element paddle unlocked">
-            <img src=${unlock} alt="paddle" data-type="paddle" id="${i}"/>
+            <img src=${unlockIcon} alt="paddle" draggable="false" data-type="paddle" id="${i}"/>
         </div>
         <div class="actions__list-element shades">
-            <img src=${shades} alt="shades" data-type="shades" id="${i}"/>
+            <img src=${shadesIcon} alt="shades" draggable="false" data-type="shades" id="${i}"/>
         </div>
         </div>
-        <div class="colorname">to be defined</div>
+        <div class="colorname" style="color:${c.fontColor}">${c.hex}</div>
     </div>
 
     <div class="panel__right">
-        <div class="right__add-button">
-            <img src=${add} alt="add" data-type="add_right" id="${i}"/>
+        <div class="right__add-button" data-type="add_right" id="${i}">
+            <img src=${addIcon} alt="add" draggable="false" data-type="add_right" id="${i}"/>
         </div>
     </div>
 </div>`;
@@ -58,8 +60,13 @@ function randomizeColor() {
     const hue = randomize(0, 360);
     const saturation = randomize(0, 100);
     const lightness = randomize(0, 100);
-    const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    const hex = hslToHex(hue, saturation, lightness).toUpperCase()
+    let fontColor
+    if (lightness > 50) { fontColor = 'black' } else { fontColor = "white" }
+    const color = { hue, saturation, lightness, hex, fontColor }
+
     return color;
+
 }
 
 function fillArrayWithColors() {
@@ -81,21 +88,89 @@ function cratePalet(e) {
     }
 }
 
-function removePanel() {
-    console.log("you clicked remove panel button");
-}
-
 function actions(e) {
     const { dataset, id } = e.path[0];
 
     switch (dataset.type) {
-        case 'add_left': {
-            panels.splice(id, 0, { lock: false, color: randomizeColor() })
-            createPanels()
-        }
+        case 'add_left':
+            if (panels.length < 8) {
+                panels.splice(id, 0, { lock: false, color: randomizeColor() })
+                createPanels()
+            }
+            break
+        case 'add_right':
+            if (panels.length < 8) {
+                panels.splice(id + 1, 0, { lock: false, color: randomizeColor() })
+                createPanels()
+            }
+            break
+        case 'remove':
+            if (panels.length > 1) {
+                panels.splice(id, 1)
+                createPanels()
+            }
+            break
+
+        case 'copy':
+            copy(dataset.color)
+            break
+
     }
+}
+
+let  panelsPosition
+
+function dranAndDrop(e) {
+    const { dataset, id } = e.path[0];
+    if (dataset.type != 'drag') return;
+
+    let clickedPanel = e.path[4]
+    let movedPanelId = clickedPanel.id
+
+
+    clickedPanel.addEventListener('dragstart', () => {
+    })
+    clickedPanel.addEventListener('dragend', () => { });
+    container.addEventListener('dragover', (e) => {
+        let movedPanelPosition = ({leftPosition: `${clickedPanel.offsetLeft}`, rightPosition: `${clickedPanel.offsetLeft + clickedPanel.offsetWidth}` })
+        let mousePosition = e.pageX
+
+        if(mousePosition<movedPanelPosition.leftPosition){
+            const switchedPanel = panels.splice(movedPanelId, 1)
+            console.log(switchedPanel)
+            // panels.splice(movedPanelId, 1)
+            // panels.splice(movedPanelId+1, 0, `${switchedPanel}`)
+
+
+        }
+
+
+    });
 
 }
 
+
+    // z internetów - nie bedzie działać
+
+    // container.addEventListener('dragover', () => {
+    //     const afterElement = getDragAfterElement(panelsList, id, e.clientX)
+    // })
+
+
+
+    // function getDragAfterElement(panelsList, dreggedElementId, x) {
+    //     const draggableElements = [...panelsList]
+    //     draggableElements.splice(dreggedElementId, 1)
+
+    //     draggableElements.reduce((closest, child)=> {
+    //         const box = child.getBoundingClientRect()
+    //         const offset = x -box.right - box.width / 2
+    //         console.log(offset)
+    //     },{offset: Number.POSITIVE_INFINITY})
+    // }
+
+
+
 window.addEventListener("keyup", cratePalet);
 container.addEventListener("click", actions);
+container.addEventListener("mousedown", dranAndDrop);
