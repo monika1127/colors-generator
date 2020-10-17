@@ -6,11 +6,11 @@ import dragIcon from "./icons/SVG/tab.svg";
 import removeIcon from "./icons/SVG/bin2.svg";
 import unlockIcon from "./icons/SVG/unlocked.svg";
 import shadesIcon from "./icons/SVG/table2.svg";
-import lock from "./icons/SVG/lock.svg";
+import lockIcon from "./icons/SVG/lock.svg";
 
 // html structure for each panel
 
-const createPanel = (c, i) => `
+const createPanel = (c, i, l) => `
 <div class="panel" style="background-color: hsl(${c.hue},${c.saturation}%, ${c.lightness}%)" id="${i}" draggable="false">
     <div class="panel__left">
         <div class="left__add-button" data-type="add_left" id="${i}">
@@ -29,7 +29,7 @@ const createPanel = (c, i) => `
             <img src=${dragIcon} alt="drag"  draggable="false" data-type="drag" id="${i}"/>
         </div>
         <div class="actions__list-element paddle unlocked">
-            <img src=${unlockIcon} alt="paddle" draggable="false" data-type="paddle" id="${i}"/>
+            <img src=${l ? lockIcon : unlockIcon} alt="padlock" draggable="false" data-type="padlock" id="${i}"/>
         </div>
         <div class="actions__list-element shades">
             <img src=${shadesIcon} alt="shades" draggable="false" data-type="shades" id="${i}"/>
@@ -70,14 +70,14 @@ function randomizeColor() {
 }
 
 function fillArrayWithColors() {
-    const newPanels = panels.map(() => (
-        { lock: false, color: randomizeColor() }))
+    const newPanels = panels.map((p) => p== undefined || p.lock == false ? ({ lock: false, color: randomizeColor() }) : p)
     panels = newPanels
 }
 
 //initial color panels
 function createPanels() {
-    const panelsHtml = panels.map((panel, id) => createPanel(panel.color, id)).join('')
+
+    const panelsHtml = panels.map((panel, id) => createPanel(panel.color, id, panel.lock)).join('')
     container.innerHTML = panelsHtml;
     // actionsListUpload()
 }
@@ -116,10 +116,10 @@ function actions(e) {
             copy(dataset.color)
             break
 
-        case 'paddle':
-
-            break
-
+        case 'padlock':
+            panels[id].lock = !panels[id].lock
+            console.log(panels[id].lock)
+            createPanels()
     }
 }
 
@@ -136,10 +136,7 @@ function dranAndDrop(e) {
     clickedPanel.draggable = 'true'
     const panelsElements = Array.from(container.querySelectorAll('.panel'))
 
-
-    clickedPanel.addEventListener('dragstart', (e) => {
-
-    })
+    clickedPanel.addEventListener('dragstart', () => { })
     clickedPanel.addEventListener('dragend', () => {
         const panelsCopy = panels
         const removedPanel = panelsCopy.splice(movedPanelId, 1)
