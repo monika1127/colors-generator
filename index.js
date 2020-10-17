@@ -11,7 +11,7 @@ import lock from "./icons/SVG/lock.svg";
 // html structure for each panel
 
 const createPanel = (c, i) => `
-<div class="panel" style="background-color: hsl(${c.hue},${c.saturation}%, ${c.lightness}%)" id="${i}">
+<div class="panel" style="background-color: hsl(${c.hue},${c.saturation}%, ${c.lightness}%)" id="${i}" draggable="true">
     <div class="panel__left">
         <div class="left__add-button" data-type="add_left" id="${i}">
             <img src=${addIcon} alt="add" draggable="false" data-type="add_left" id="${i}"/>
@@ -26,7 +26,7 @@ const createPanel = (c, i) => `
             <img src=${copyIcon} alt="copy" draggable="false" data-type="copy" id="${i}" data-color="${c.hex}"/>
         </div>
         <div class="actions__list-element drag">
-            <img src=${dragIcon} alt="drag"  data-type="drag" id="${i}"/>
+            <img src=${dragIcon} alt="drag"  draggable="false" data-type="drag" id="${i}"/>
         </div>
         <div class="actions__list-element paddle unlocked">
             <img src=${unlockIcon} alt="paddle" draggable="false" data-type="paddle" id="${i}"/>
