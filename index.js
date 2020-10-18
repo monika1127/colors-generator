@@ -1,12 +1,46 @@
 import hslToHex from "hsl-to-hex";
 import copy from "copy-to-clipboard";
-import copyIcon from "./icons/SVG/copy.svg";
+
 import addIcon from "./icons/SVG/plus.svg";
+import copyIcon from "./icons/SVG/copy.svg";
 import dragIcon from "./icons/SVG/tab.svg";
 import removeIcon from "./icons/SVG/bin2.svg";
 import unlockIcon from "./icons/SVG/unlocked.svg";
 import shadesIcon from "./icons/SVG/table2.svg";
 import lockIcon from "./icons/SVG/lock.svg";
+
+import copyIconLight from "./icons/SVG/copyLight.svg";
+import dragIconLight from "./icons/SVG/tabLight.svg";
+import removeIconLight from "./icons/SVG/bin2Light.svg";
+import unlockIconLight from "./icons/SVG/unlockedLight.svg";
+import shadesIconLight from "./icons/SVG/table2Light.svg";
+import lockIconLight from "./icons/SVG/lockLight.svg";
+
+
+import copyIconDark from "./icons/SVG/copyDark.svg";
+import dragIconDark from "./icons/SVG/tabDark.svg";
+import removeIconDark from "./icons/SVG/bin2Dark.svg";
+import unlockIconDark from "./icons/SVG/unlockedDark.svg";
+import shadesIconDark from "./icons/SVG/table2Dark.svg";
+import lockIconDark from "./icons/SVG/lockDark.svg";
+
+const iconsDark = {
+    copyIcon: copyIconDark,
+    dragIcon:dragIconDark,
+    removeIcon:removeIconDark,
+    unlockIcon:unlockIconDark,
+    shadesIcon: shadesIconDark,
+    lockIcon: lockIconDark,
+ }
+
+ const iconsLight= {
+    copyIcon: copyIconLight,
+    dragIcon:dragIconLight,
+    removeIcon:removeIconLight,
+    unlockIcon:unlockIconLight,
+    shadesIcon: shadesIconLight,
+    lockIcon: lockIconLight,
+ }
 
 // html structure for each panel
 
@@ -20,19 +54,19 @@ const createPanel = (c, i, l) => `
     <div class="panel__main">
         <div class="actions__list">
         <div class="actions__list-element remove">
-            <img src=${removeIcon} alt="remove" draggable="false" data-type="remove" id="${i}"/>
+            <img src=${c.iconColor.removeIcon} alt="remove" draggable="false" data-type="remove" id="${i}"/>
         </div>
         <div class="actions__list-element copy">
-            <img src=${copyIcon} alt="copy" draggable="false" data-type="copy" id="${i}" data-color="${c.hex}"/>
+            <img src=${c.iconColor.copyIcon} alt="copy" draggable="false" data-type="copy" id="${i}" data-color="${c.hex}"/>
         </div>
         <div class="actions__list-element drag">
-            <img src=${dragIcon} alt="drag"  draggable="false" data-type="drag" id="${i}"/>
+            <img src=${c.iconColor.dragIcon} alt="drag"  draggable="false" data-type="drag" id="${i}"/>
         </div>
-        <div class="actions__list-element paddle unlocked">
-            <img src=${l ? lockIcon : unlockIcon} alt="padlock" draggable="false" data-type="padlock" id="${i}"/>
+        <div class="actions__list-element padlock ${l ? 'lock' : 'unlock'}">
+            <img src=${l ? c.iconColor.lockIcon : c.iconColor.unlockIcon} alt="padlock" draggable="false" data-type="padlock" id="${i}"/>
         </div>
         <div class="actions__list-element shades">
-            <img src=${shadesIcon} alt="" draggable="false" data-type="shades" id="${i}"/>
+            <img src=${c.iconColor.shadesIcon} alt="" draggable="false" data-type="shades" id="${i}"/>
         </div>
         </div>
         <div class="colorname" style="color:${c.fontColor}">${c.hex}</div>
@@ -64,8 +98,15 @@ function randomizeColor() {
     const lightness = randomize(0, 100);
     const hex = hslToHex(hue, saturation, lightness).toUpperCase()
     let fontColor
-    if (lightness > 50) { fontColor = 'black' } else { fontColor = "white" }
-    const color = { hue, saturation, lightness, hex, fontColor }
+    let iconColor
+    if (lightness > 50) {
+        fontColor = 'black'
+        iconColor = iconsDark }
+    else {
+        fontColor = "white"
+        iconColor = iconsLight }
+    const color = { hue, saturation, lightness, hex, fontColor, iconColor}
+
 
     return color;
 
@@ -81,20 +122,14 @@ function createPanels() {
     panelsLength = `${100 / panels.length}%`
     const panelsHtml = panels.map((panel, id) => createPanel(panel.color, id, panel.lock)).join('')
     container.innerHTML = panelsHtml;
-
-
-
 }
 
 function cratePalet(e) {
     if (e.keyCode === 32) {
-
         fillArrayWithColors()
         createPanels();
     }
 }
-
-
 
 function actions(e) {
     const { dataset, id } = e.path[0];
@@ -105,53 +140,61 @@ function actions(e) {
                 panels.splice(id, 0, { lock: false, color: randomizeColor() })
                 createPanels()
             }
-            break
+        break
+
         case 'add_right':
             if (panels.length < 8) {
                 panels.splice(id + 1, 0, { lock: false, color: randomizeColor() })
                 createPanels()
             }
-            break
+        break
+
         case 'remove':
             if (panels.length > 1) {
                 panels.splice(id, 1)
                 createPanels()
             }
-            break
+        break
 
         case 'copy':
             copy(dataset.color)
-            break
+        break
 
         case 'padlock':
             panels[id].lock = !panels[id].lock
-            console.log(panels[id].lock)
             createPanels()
+
         break
+
         case 'shades':
             const shadesStartColor = panels[id].color
             const shadesPanel = e.path[4]
             createShadesPalet(shadesStartColor, shadesPanel)
             container.classList.add('shades-open')
-
-            break
+        break
 
         case 'tone':
             const currentPanelId = e.path[2].id
-            if (e.target.dataset.shadecolor > 50)
-            { panels[currentPanelId].color.fontColor = 'black' }
-            else { panels[currentPanelId].color.fontColor = "white" }
-            panels[currentPanelId].color.lightness =e.target.dataset.shadecolor;
-              createPanels()
+
+            if (e.target.dataset.shadecolor > 50) {
+                panels[currentPanelId].color.fontColor = 'black'
+                panels[currentPanelId].color.iconColor = iconsDark }
+
+            else {
+                panels[currentPanelId].color.fontColor = "white"
+                panels[currentPanelId].color.iconColor = iconsLight }
+
+            panels[currentPanelId].color.lightness = e.target.dataset.shadecolor;
+            createPanels()
             container.classList.remove('shades-open')
-            break
+         break
 
         default:
-            // if (!container.classList.contains('shades-open')) return
-            // container.classList.remove('shades-open')
-            // createPanels()
+            if (!container.classList.contains('shades-open')) return
+            container.classList.remove('shades-open')
+            createPanels()
 
-            break
+        break
 
     }
 }
