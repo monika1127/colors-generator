@@ -11,7 +11,7 @@ import lockIcon from "./icons/SVG/lock.svg";
 // html structure for each panel
 
 const createPanel = (c, i, l) => `
-<div class="panel" style="background-color: hsl(${c.hue},${c.saturation}%, ${c.lightness}%)" id="${i}" draggable="false">
+<div class="panel" style="background-color: hsl(${c.hue},${c.saturation}%, ${c.lightness}%); flex-basis:${panelsLength}" id="${i}" draggable="false">
     <div class="panel__left">
         <div class="left__add-button" data-type="add_left" id="${i}">
             <img src=${addIcon} alt="add" draggable="false" data-type="add_left" id="${i}"/>
@@ -32,7 +32,7 @@ const createPanel = (c, i, l) => `
             <img src=${l ? lockIcon : unlockIcon} alt="padlock" draggable="false" data-type="padlock" id="${i}"/>
         </div>
         <div class="actions__list-element shades">
-            <img src=${shadesIcon} alt="shades" draggable="false" data-type="shades" id="${i}"/>
+            <img src=${shadesIcon} alt="" draggable="false" data-type="shades" id="${i}"/>
         </div>
         </div>
         <div class="colorname" style="color:${c.fontColor}">${c.hex}</div>
@@ -47,8 +47,10 @@ const createPanel = (c, i, l) => `
 
 const container = document.querySelector(".container");
 
+
 // {color: 'some color', lock: true | false}
 let panels = new Array(5).fill();
+let panelsLength
 
 //rnadom function
 function randomize(min, max) {
@@ -70,24 +72,29 @@ function randomizeColor() {
 }
 
 function fillArrayWithColors() {
-    const newPanels = panels.map((p) => p== undefined || p.lock == false ? ({ lock: false, color: randomizeColor() }) : p)
+    const newPanels = panels.map((p) => p == undefined || p.lock == false ? ({ lock: false, color: randomizeColor() }) : p)
     panels = newPanels
 }
 
 //initial color panels
 function createPanels() {
-
+    panelsLength = `${100 / panels.length}%`
     const panelsHtml = panels.map((panel, id) => createPanel(panel.color, id, panel.lock)).join('')
     container.innerHTML = panelsHtml;
-    // actionsListUpload()
+
+
+
 }
 
 function cratePalet(e) {
     if (e.keyCode === 32) {
+
         fillArrayWithColors()
         createPanels();
     }
 }
+
+
 
 function actions(e) {
     const { dataset, id } = e.path[0];
@@ -120,7 +127,74 @@ function actions(e) {
             panels[id].lock = !panels[id].lock
             console.log(panels[id].lock)
             createPanels()
+        break
+        case 'shades':
+            const shadesStartColor = panels[id].color
+            const shadesPanel = e.path[4]
+            createShadesPalet(shadesStartColor, shadesPanel)
+            container.classList.add('shades-open')
+
+            break
+
+        case 'tone':
+            const currentPanelId = e.path[2].id
+            if (e.target.dataset.shadecolor > 50)
+            { panels[currentPanelId].color.fontColor = 'black' }
+            else { panels[currentPanelId].color.fontColor = "white" }
+            panels[currentPanelId].color.lightness =e.target.dataset.shadecolor;
+              createPanels()
+            container.classList.remove('shades-open')
+            break
+
+        default:
+            // if (!container.classList.contains('shades-open')) return
+            // container.classList.remove('shades-open')
+            // createPanels()
+
+            break
+
     }
+}
+
+function createShadesPalet(shadesStartColor, panelId) {
+
+    //crate array of all shades
+
+    const currenttone = Math.round(shadesStartColor.lightness / 5)
+    const lightenesTones = new Array(21).fill().map((t, i) => {
+
+        const hue = shadesStartColor.hue;
+        const saturation = shadesStartColor.saturation;
+
+        let lightness
+        let cssClass
+
+        if (i === currenttone) {
+            lightness = shadesStartColor.lightness
+            cssClass = 'origin__shade'
+        }
+        else {
+            lightness = (i) * 5
+            cssClass = 'notorigin__shade'
+        }
+
+        const hex = hslToHex(hue, saturation, lightness).toUpperCase()
+        let fontColor
+        if (lightness > 50) { fontColor = 'black' } else { fontColor = "white" }
+        const shadesTones = { hue, saturation, lightness, hex, fontColor, cssClass }
+        const shadesHtml =
+            `<div
+                class="shade__block ${cssClass}"
+                style="background-color: hsl(${shadesTones.hue},${shadesTones.saturation}%, ${shadesTones.lightness}%); color:${shadesTones.fontColor}"
+                data-type="tone"
+                data-shadecolor="${shadesTones.lightness}">
+                    ${shadesTones.hex}
+            </div>`
+        return shadesHtml
+    })
+
+    const shadesPanelHtml = lightenesTones.join('')
+    panelId.innerHTML = `<div class="shades__container">${shadesPanelHtml}</div>`
 }
 
 

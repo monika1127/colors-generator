@@ -1,12 +1,13 @@
 <html>
   <head> </head>
   <body>
-    <div class="container">it workjjjs</div>
+    <div class="container">pres space to start</div>
   </body>
   <style>
     html {
       box-sizing: border-box;
       user-select: none;
+      font-family: "Gill Sans", sans-serif;
     }
 
     .container {
@@ -17,8 +18,8 @@
     }
 
     .panel {
-      flex-grow: 1;
       display: flex;
+      flex: 0 0 auto;
     }
 
     .panel__main {
@@ -57,7 +58,8 @@
     .colorname {
       margin: 70px 0px 100px 0px;
       font-size: 20px;
-      font-weight: 900;
+      font-weight: 700;
+      overflow: visible;
     }
 
     .panel__left,
@@ -68,7 +70,7 @@
 
     .left__add-button,
     .right__add-button {
-      background-color: rgb(220, 220, 220);
+      background-color: rgb(255, 255, 255);
       padding: 15px;
       border-radius: 50%;
       position: relative;
@@ -85,6 +87,44 @@
     }
     .panel:not(:last-child) .right__add-button {
       right: -25px;
+    }
+
+    /* shades styling */
+
+    .shades__container {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: stretch;
+      width: 100%;
+    }
+
+    .shade__block {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0px;
+      line-height: 1rem;
+      font-weight: 500;
+    }
+
+    .origin__shade {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .shade__block:hover {
+      font-size: 12px;
+    }
+
+    .shades-open .panel__left,
+    .shades-open .panel__right,
+    .shades-open .panel__main {
+      pointer-events: none;
+    }
+
+    .shades-open .panel:hover .actions__list {
+      opacity: 0;
     }
   </style>
   <script src="./index.js"></script>
